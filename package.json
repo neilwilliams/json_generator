@@ -1,0 +1,11 @@
+{
+  "name": "json_generator",
+  "version": "1.0.0",
+  "description": "Website to generate dummy json data. This can be used to import into parse, or used as a static json resource.",
+  "main": "index.js",
+  "dependencies": {
+    "bower": "^1.3.12"
+  },
+  "devDependencies": {},
+  "author": "Neil Williams"
+}

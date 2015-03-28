@@ -1,0 +1,15 @@
+{
+  "name": "json_generator",
+  "version": "0.0.0",
+  "authors": [
+    "Neil Williams <nwillia2@glam.ac.uk>"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
