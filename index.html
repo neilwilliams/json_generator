@@ -83,6 +83,7 @@
       
       <p>
         <button id="generate" type="button" class ="btn btn-primary hidden">Generate</button>
+        <button id="download" type="button" class ="btn btn-primary hidden pull-right">Download</button>
       </p>
       <p>
         <div id="results" class="hidden"></div>
@@ -91,7 +92,9 @@
     
     <!-- Load JS at the bottom so that 'above the fold' content is displayed first -->
     <script src="bower_components/jquery/dist/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>    
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/download.js" type="text/javascript" charset="utf-8"></script>
+        
     <script type="text/javascript">
       $(document).ready(function(){
         var columns = [];
@@ -118,8 +121,7 @@
           // first value, show the table
           if (!isEmpty(columns) && columns.length == 1){
             $("#columns").removeClass("hidden").hide().fadeIn();
-            $("#generate").removeClass("hidden").hide().fadeIn();
-            $("#results").removeClass("hidden").hide().show();            
+            $("#generate").removeClass("hidden").hide().fadeIn();        
           }          
         };
         
@@ -134,7 +136,7 @@
           var columnJson = {};
           
           // loop for the number of rows specified
-          var rowCount = $("#rowCount").val;
+          var rowCount = $("#rowCount").val();
           if (isNaN(rowCount))
             rowCount = 50;
           for (var i=0;i<rowCount;i++){
@@ -149,13 +151,10 @@
               }                        
             });
           
-            json[rootName].push(columnJson);
-            
-            var parsedResults = JSON.stringify(json);
-          
-            $("#results").html(parsedResults);
-            return parsedResults;
+            json[rootName].push(columnJson);                                              
           }
+          var parsedResults = JSON.stringify(json, null, 2);
+          return parsedResults;
         };
         
         $("#addColumn").on("click", function(e){
@@ -173,8 +172,14 @@
           }
         });
         
-        $("#generate").on("click", function(e){          
-          document.location = "data:application/octet-stream;," + generate();
+        $("#generate").on("click", function(e){
+          $("#results").html("<pre>" + generate() + "</pre>");
+          $("#results").removeClass("hidden").hide().fadeIn();    
+          $("#download").removeClass("hidden").hide().fadeIn();    
+        });
+        
+        $("#download").on("click", function(e){          
+          download("data:application/json;," + generate(), $("#rootName").val() + ".json", "application/json");
         });
         
         // columns modal events
