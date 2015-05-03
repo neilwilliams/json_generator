@@ -56,27 +56,29 @@
             <div class="modal-header">
               <h4 class="modal-title">Add a column</h4>
             </div>
-            <div class="modal-body">
-              <div class="container-fluid">
-                <div id="columnsAlert" class="alert alert-danger hidden" role="alert">
-                  Please complete all fields in order to add a column.
-                </div>
-                <div class="form-group">
-                  <label for="columnName">Column Name</label>
-                  <input type="textbox" class="form-control" id="columnName">
-                </div>
-                <div class="form-group">
-                  <label for="columnType">Column Type</label>
-                  <select id="columnType" class="form-control">
-                    <option value="string">Text</option>
-                    <option value="boolean">Boolean</option>          
-                  </select>
+            <form id="addColumnForm">
+              <div class="modal-body">                
+                <div class="container-fluid">
+                  <div id="columnsAlert" class="alert alert-danger hidden" role="alert">
+                    Please complete all fields in order to add a column.
+                  </div>
+                  <div class="form-group">
+                    <label for="columnType">Column Type</label>
+                    <select id="columnType" class="form-control">
+                      <option value="string">Text</option>
+                      <option value="boolean">Boolean</option>          
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="columnName">Column Name</label>
+                    <input type="textbox" class="form-control" id="columnName">
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="modal-footer">              
-              <button id="addColumn" class="btn btn-default">Add</button>          
-            </div>            
+              <div class="modal-footer">              
+                <button id="addColumn" class="btn btn-default" type="submit">Add</button>          
+              </div>
+            </form>        
           </div>
         </div>
       </div>
@@ -93,120 +95,8 @@
     <!-- Load JS at the bottom so that 'above the fold' content is displayed first -->
     <script src="bower_components/jquery/dist/jquery.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="bower_components/chance/chance.js" type="text/javascript" charset="utf-8"></script>        
     <script src="assets/js/download.js" type="text/javascript" charset="utf-8"></script>
-        
-    <script type="text/javascript">
-      $(document).ready(function(){
-        var columns = [];
-        var columnsEl = $("#columns .table tbody");
-        var columnsModalEl = $("#columnsModal");              
-        var columnNameEl = $("#columnName");
-        var columnTypeEl = $("#columnType");
-        var columnsAlertEl = $("#columnsAlert");        
-        
-        var renderColumns = function(){        
-          columnsEl.empty();
-          $.each(columns, function(k, v){
-            var row = $("<tr>");
-            var nameCol = $("<td>");
-            var typeCol = $("<td>");
-            
-            nameCol.html(v.name);
-            typeCol.html(v.type.text);            
-            row.append(nameCol);
-            row.append(typeCol);            
-            columnsEl.append(row);
-          });
-          
-          // first value, show the table
-          if (!isEmpty(columns) && columns.length == 1){
-            $("#columns").removeClass("hidden").hide().fadeIn();
-            $("#generate").removeClass("hidden").hide().fadeIn();        
-          }          
-        };
-        
-        var generate = function(){
-          // get root name
-          var rootName = $("#rootName").val();
-          if (isEmpty(rootName))
-            rootName = "root";
-          var json = {};
-          json[rootName] = [];        
-                    
-          var columnJson = {};
-          
-          // loop for the number of rows specified
-          var rowCount = $("#rowCount").val();
-          if (isNaN(rowCount))
-            rowCount = 50;
-          for (var i=0;i<rowCount;i++){
-          
-            // loop through columns
-            $.each(columns, function(k,column){
-              // check specific types here
-              if (column.type.value == ""){
-              
-              } else {
-                columnJson[column.name] = "Some html content";
-              }                        
-            });
-          
-            json[rootName].push(columnJson);                                              
-          }
-          var parsedResults = JSON.stringify(json, null, 2);
-          return parsedResults;
-        };
-        
-        $("#addColumn").on("click", function(e){
-          var columnData = {};
-          columnData.name = columnNameEl.val();
-          columnData.type = {"value" : columnTypeEl.val(), "text" : columnTypeEl.children("option:selected").text()};
-          
-          // TODO: validate data
-          if ((!isEmpty(columnData.name)) || (!isEmpty(columnData.name))){
-            columns.push(columnData);
-            columnsAlertEl.hide();
-            columnsModalEl.modal('hide');            
-          } else {
-            columnsAlertEl.removeClass("hidden").hide().fadeIn();
-          }
-        });
-        
-        $("#generate").on("click", function(e){
-          $("#results").html("<pre>" + generate() + "</pre>");
-          $("#results").removeClass("hidden").hide().fadeIn();    
-          $("#download").removeClass("hidden").hide().fadeIn();    
-        });
-        
-        $("#download").on("click", function(e){          
-          download("data:application/json;," + generate(), $("#rootName").val() + ".json", "application/json");
-        });
-        
-        // columns modal events
-        columnsModalEl.on('show.bs.modal', function () {
-          columnsAlertEl.addClass("hidden");
-          // clear previous values
-          columnNameEl.val("");
-          columnTypeEl.val("");
-        });
-        
-        columnsModalEl.on('shown.bs.modal', function () {
-          columnNameEl.focus();
-        });
-        
-        columnsModalEl.on('hidden.bs.modal', function () {
-          renderColumns();
-        });
-      });
-      
-      // utilities
-      function isEmpty(val){
-        if (val instanceof String){
-          return !($.trim(val));
-        } else {
-          return $.isEmptyObject(val);
-        }
-      }    
-    </script>
+    <script src="assets/js/main.js" type="text/javascript" charset="utf-8"></script>          
   </body>
 </html>
