@@ -6,7 +6,7 @@
 // https://github.com/rndme/download
 
 // data can be a string, Blob, File, or dataURL
-function download(data, strFileName, strMimeType) {
+function download(data, strFileName, strMimeType, started, finished) {
 	
 	var self = window, // this script is only for browsers anyway...
 		u = "application/octet-stream", // this default mime also triggers iframe downloads
@@ -62,12 +62,17 @@ function download(data, strFileName, strMimeType) {
 		if ('download' in a) { //html5 A[download] 			
 			a.href = url;
 			a.setAttribute("download", fn);
-			a.innerHTML = "downloading...";
+      if (started)
+        started();
+			//a.innerHTML = "downloading...";
 			D.body.appendChild(a);
 			setTimeout(function() {
 				a.click();
 				D.body.removeChild(a);
 				if(winMode===true){setTimeout(function(){ self.URL.revokeObjectURL(a.href);}, 250 );}
+        
+        if (finished)
+          finished();
 			}, 66);
 			return true;
 		}
@@ -81,6 +86,8 @@ function download(data, strFileName, strMimeType) {
 		}
 		
 		//do iframe dataURL download (old ch+FF):
+    if (started)
+      started();
 		var f = D.createElement("iframe");
 		D.body.appendChild(f);
 		
@@ -88,7 +95,11 @@ function download(data, strFileName, strMimeType) {
 			url="data:"+url.replace(/^data:([\w\/\-\+]+)/, u);
 		}
 		f.src=url;
-		setTimeout(function(){ D.body.removeChild(f); }, 333);
+		setTimeout(function(){ 
+      D.body.removeChild(f); 
+      if (finished)
+        finished();
+    }, 333);
 		
 	}//end saver 
 		

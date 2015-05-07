@@ -5,10 +5,14 @@ var columnNameEl;
 var columnTypeEl;
 var columnsAlertEl;
 
-var json;
+var json, html;
 
 $(document).ready(function(){  
-  columns = [];
+  // testing
+  columns = [
+    {type: {"value": 1, "text": "text"}, name: "Column 1"}
+  ];  
+  
   columnsEl = $("#columns .table tbody");
   columnsModalEl = $("#columnsModal");              
   columnNameEl = $("#columnName");
@@ -18,17 +22,16 @@ $(document).ready(function(){
   $("#addColumnForm").on("submit", addColumn);
   
   $("#generate").on("click", function(e){
-    $("#results").html("<pre></pre>");
+    $("#results .body").html("Your data is ready to download. You can also preview the data first.");
     $("#results").removeClass("hidden").hide();    
-    $("#download").removeClass("hidden").hide();  
     $("#progress").removeClass("hidden").hide().fadeIn();
     
     // triny parallel
     var p = new Parallel({}, { 
       evalPath: "bower_components/paralleljs/lib/eval.js",
       env: {
-        rootName: $("#rootName").val(),
-        rowCount: $("#rowCount").val(),
+        rootName: getRootName(),
+        rowCount: getRowCount(),
         columns: columns
       }
     }).require(
@@ -36,13 +39,50 @@ $(document).ready(function(){
         htmlEncode,
         getRandomHtmlContent,
         "/bower_components/chance/chance.js"
-    ).spawn(generate).then(function(data){
-      render(data);
+    ).spawn(generate).then(
+      function(data){
+        json = data;
+        $("#progress").removeClass("hidden").hide().fadeOut(function(){
+          $("#results").removeClass("hidden").hide().fadeIn();
+        }); 
+      },
+      function(err){
+        console.log(err);
+        console.log(err.message);
+      }
+    );
+  });
+  
+  $("#download .asJson").on("click", function(e){          
+    download("data:application/json;," + json, getRootName() + ".json", "application/json", 
+    function(){
+      $("#progress").removeClass("hidden").fadeIn();
+    },
+    function(){
+      $("#progress").fadeOut();
     });
   });
   
-  $("#download").on("click", function(e){          
-    download("data:application/json;," + generate(), $("#rootName").val() + ".json", "application/json");
+  $("#download .asHtml").on("click", function(e){
+    if (html == null)
+      html = renderHtml();
+    download("data:application/html;," + html, getRootName() + ".html", "application/html", 
+    function(){
+      $("#progress").removeClass("hidden").fadeIn();
+    },
+    function(){
+      $("#progress").fadeOut();
+    });
+  });
+  
+  $("#preview .asJson").on("click", function(){
+    $("#results .body").html("<pre>" + JSON.stringify(json, null, 2) + "</pre>");   
+  });
+  
+  $("#preview .asHtml").on("click", function(){
+    if (html == null)
+      html = renderHtml();    
+    $("#results .body").html(html);
   });
   
   // columns modal events
@@ -59,12 +99,14 @@ $(document).ready(function(){
   
   columnsModalEl.on('hidden.bs.modal', function () {
     renderColumns();
-  });
+  });  
+  
+  // testing
+  renderColumns();
 });
 
 // main functions
 function generate(){
-  // reset json
   var json = {};
   var rootName = global.env.rootName;
   var rowCount = global.env.rowCount;
@@ -85,62 +127,66 @@ function generate(){
     // loop through columns
     for (var j=0; j<columnCount; j++){
       var column = columns[j];
-      // check specific types here
-      if (column.type.value == ""){
-  
+      
+      // 30% chance to be a null value
+      if (Math.random() < 0.3){
+        columnJson[column.name] = null;
       } else {
-        columnJson[column.name] = getRandomHtmlContent();          
-      }                        
+        // check specific types here
+        if (column.type.value == ""){
+  
+        } else {
+          columnJson[column.name] = getRandomHtmlContent();          
+        }                        
+      }          
     }
-    json[rootName].push(columnJson);                                              
+    json[rootName].push(columnJson);
   }
   return json;
 }
 
-function render(data){
-  json = data;
-  // depending on output type render
-  var content = renderJson(json);
-  
-  $("#results").html("<pre>" + content + "</pre>");
-  $("#progress").removeClass("hidden").hide().fadeOut(function(){
-    $("#results").removeClass("hidden").hide().fadeIn();    
-    $("#download").removeClass("hidden").hide().fadeIn();
-  });  
-}
-
-function renderHtml(data){
+function renderHtml(){
   // loop through the produced json, and render it to the page
-  var jsonArray = data[rootName];
-  for (var i=0; i < jsonArray.length; i++){
+  var jsonArray = json[getRootName()];
     
+  var html = "<dl class='dl-horizontal'>";
+  for (var i=0; i < jsonArray.length; i++){
+    var record = jsonArray[i];
+    var columns = Object.keys(record);
+    var columnCount = columns.length;
+    for (var j=0; j<columnCount; j++){
+      var columnName = columns[j];
+      html += "<dh>" + columnName + "</dh>";
+      html += "<dd>" + htmlDecode(record[columnName]) + "</dd>";
+    }
+    html += "</dl>";
   }
+  return html;
 };
-
-function renderJson(data){
-  return JSON.stringify(data, null, 2);
-}
 
 function renderColumns(){        
   columnsEl.empty();
-  $.each(columns, function(k, v){
+  var columnCount = columns.length;
+  for (var i = 0; i < columnCount; i++){
+    var column = columns[i];
+    
     var row = $("<tr>");
     var nameCol = $("<td>");
     var typeCol = $("<td>");
     
-    nameCol.html(v.name);
-    typeCol.html(v.type.text);            
+    nameCol.html(column.name);
+    typeCol.html(column.type.text);            
     row.append(nameCol);
     row.append(typeCol);            
     columnsEl.append(row);
-  });
+  }
   
   // first value, show the table
   if (!isEmpty(columns) && columns.length == 1){
     $("#columns").removeClass("hidden").hide().fadeIn();
     $("#generate").removeClass("hidden").hide().fadeIn();        
   }          
-};
+}
 
 function addColumn(event){
   var columnData = {};
@@ -156,7 +202,15 @@ function addColumn(event){
     columnsAlertEl.removeClass("hidden").hide().fadeIn();
   }
   event.preventDefault();
-};
+}
+
+function getRootName(){
+  return $("#rootName").val() || "root";
+}
+
+function getRowCount(){
+  return $("#rowCount").val() || 50;
+}
 
 // utilities
 function isEmpty(val){
@@ -180,7 +234,7 @@ function htmlEncode(value){
               .replace(/>/g, '&gt;');
 }
 
-function htmlDecode(value){
+function htmlDecode(html){
   var txt = document.createElement("textarea");
       txt.innerHTML = html;
       return txt.value;
@@ -269,9 +323,14 @@ function getRandomHtmlContent(){
       var chosen = chance.integer({min: 0, max: wordCount});
       for (var i=0; i < wordCount; i++){
         var word = words[i];
-        if (!word.contains("<") && i == chosen){
-          word = "<a href='" + chance.url() + "'>" + word + "</a>";
-        }
+        if (word.indexOf("<") > -1){
+          // if this is an html tag, move onto the next word
+          chosen++;
+        } else {
+          if (i == chosen){
+            word = "<a href='" + chance.url() + "'>" + word + "</a>";
+          }
+        }        
       }
       return words.join(" ");
     }

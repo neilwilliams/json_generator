@@ -85,12 +85,44 @@
       
       <p>
         <button id="generate" type="button" class ="btn btn-primary hidden">Generate</button>
-        <button id="download" type="button" class ="btn btn-primary hidden pull-right">Download</button>
       </p>
-      <p>
-        <div id="results" class="hidden"></div>
-        <div id="progress" class="hidden">Processing...</div>
-      </p>      
+      
+      <hr />          
+      
+      <div id="results" class="hidden">
+        <div class="header">
+          <p>
+            <div id="download" class="btn-group">
+              <button type="button" class="btn btn-primary asJson">Download</button>
+              <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Download Options</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#" class="asJson">as JSON</a></li>            
+                <li><a href="#" class="asXml">as XML</a></li>
+                <li><a href="#" class="asCsv">as CSV</a></li>
+                <li><a href="#" class="asHtml">as HTML</a></li>            
+              </ul>
+            </div>
+            <div id="preview" class="btn-group">
+              <button type="button" class ="btn btn-success asJson">Preview</button>
+              <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Preview Options</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#" class="asJson">as JSON</a></li>            
+                <li><a href="#" class="asXml">as XML</a></li>
+                <li><a href="#" class="asCsv">as CSV</a></li>
+                <li><a href="#" class="asHtml">as HTML</a></li>    
+              </ul>
+            </div>
+          </p>
+        </div>
+        <div class="body"></div>
+      </div>
+      <div id="progress" class="hidden">Processing...</div>
     </div>
     
     <!-- Load JS at the bottom so that 'above the fold' content is displayed first -->
